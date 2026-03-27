@@ -17,3 +17,5 @@ build/*
 *.exe
 
 build.ninja
+
+vendored/*
