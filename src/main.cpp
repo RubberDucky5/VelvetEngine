@@ -13,49 +13,53 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 
+#define WIDTH 800
+#define HEIGHT 600
+
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
+
+static SDL_Texture *render_target;
 
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     /* Create the window */
-    if (!SDL_CreateWindowAndRenderer("Hello World", 800, 600, 0, &window, &renderer)) {
-        SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
+    if (!SDL_CreateWindowAndRenderer("Velvet Engine", WIDTH, HEIGHT, 0, &window, &renderer)) {
+        SDL_Log("Couldn't create window and/or renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    render_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+
     return SDL_APP_CONTINUE;
 }
 
 /* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
-    if (event->type == SDL_EVENT_KEY_DOWN ||
-        event->type == SDL_EVENT_QUIT) {
+    if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
     }
     return SDL_APP_CONTINUE;
 }
 
-/* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    const char *message = "Velvet Engine 0.0";
-    int w = 0, h = 0;
-    float x, y;
-    const float scale = 4.0f;
-
-    /* Center the message and scale it up */
-    SDL_GetRenderOutputSize(renderer, &w, &h);
-    SDL_SetRenderScale(renderer, scale, scale);
-    x = ((w / scale) - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * SDL_strlen(message)) / 2;
-    y = ((h / scale) - SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE) / 2;
-
-    /* Draw the message */
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderDebugText(renderer, x, y, message);
+
+    void *pixels;
+    int pitch;
+    SDL_LockTexture(render_target, NULL, &pixels, &pitch);
+
+    for(int i = 0; i < WIDTH * HEIGHT; i++) {
+        *((Uint32*)pixels + i) = 0xFF0000FF;
+    }
+
+    SDL_UnlockTexture(render_target);
+    SDL_RenderTexture(renderer, render_target, NULL, NULL);
+
     SDL_RenderPresent(renderer);
 
     return SDL_APP_CONTINUE;
