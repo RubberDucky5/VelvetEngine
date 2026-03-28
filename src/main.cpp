@@ -12,6 +12,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #include <cstdlib>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_main.h>
 #include "mathutil.h"
 #include "renderer.h"
@@ -45,12 +46,17 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     if (event->type == SDL_EVENT_QUIT) {
         return SDL_APP_SUCCESS;  /* end the program, reporting success to the OS. */
     }
+
+    SDL_PumpEvents();
+
     return SDL_APP_CONTINUE;
 }
 
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    scene->render();
+    const bool* keys = SDL_GetKeyboardState(NULL);
+
+    scene->render(keys);
 
     SDL_RenderPresent(renderer);
 

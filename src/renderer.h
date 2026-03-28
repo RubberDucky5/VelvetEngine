@@ -4,9 +4,9 @@
 class Scene {
     public: 
         SDL_Renderer* renderer;
-        
+
         Scene (SDL_Renderer* _renderer, Vec2 window_size);
-        void render ();
+        void render (const bool* keys);
     private:
         SDL_Texture* render_target;
 };
